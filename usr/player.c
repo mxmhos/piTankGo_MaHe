@@ -42,8 +42,8 @@ void InicializaPlayer (TipoPlayer *p_player)
 	p_player->frecuencia_nota_actual = p_player.p_diapro.frecuancias[0];
 	p_player->duracion_nota_actual = p_player.p_diapro.duraciones[0];
 	//softToneCreate (PLAYER_PWM_PIN); la mando al config de piTankGo
-	softToneWrite (PLAYER_PWM_PIN, p_player.frecuencia_nota_actual);
-	tmr_startms(tmr_t* tmr_t, this->user_data.duracion_nota_actual);
+	//softToneWrite (PLAYER_PWM_PIN, p_player.frecuencia_nota_actual);
+	//tmr_startms(tmr_t* tmr_t, this->user_data.duracion_nota_actual);
 }
 
 //------------------------------------------------------
@@ -53,7 +53,7 @@ void InicializaPlayer (TipoPlayer *p_player)
 int CompruebaStartDisparo (fsm_t* this)
 {
 	int result = 0;
-	if (flags_player && FLAG_START_DISPARO)
+	if (flags_player & FLAG_START_DISPARO)
 	{
 		result = 1;
 	}
@@ -63,7 +63,7 @@ int CompruebaStartDisparo (fsm_t* this)
 int CompruebaStartImpacto (fsm_t* this)
 {
 	int result = 0;
-	if (flags_player && FLAG_START_IMPACTO)
+	if (flags_player & FLAG_START_IMPACTO)
 	{
 		result = 1;
 	}
@@ -73,7 +73,7 @@ int CompruebaStartImpacto (fsm_t* this)
 int CompruebaNuevaNota (fsm_t* this)
 {
 	int result = 0;
-	if (!(flags_player && FLAG_PLAYER_END))
+	if (!(flags_player & FLAG_PLAYER_END))
 	{
 		result = 1;
 	}
@@ -83,7 +83,7 @@ int CompruebaNuevaNota (fsm_t* this)
 int CompruebaNotaTimeout (fsm_t* this)
 {
 	int result = 0;
-	if (flags_player && FLAG_NOTA_TIMEOUT)
+	if (flags_player & FLAG_NOTA_TIMEOUT)
 	{
 		result = 1;
 	}
@@ -93,7 +93,7 @@ int CompruebaNotaTimeout (fsm_t* this)
 int CompruebaFinalEfecto (fsm_t* this)
 {
 	int result = 0;
-	if (flags_player && FLAG_PLAYER_END)
+	if (flags_player & FLAG_PLAYER_END)
 	{
 		result = 1;
 	}
@@ -106,16 +106,16 @@ int CompruebaFinalEfecto (fsm_t* this)
 
 void InicializaPlayDisparo (fsm_t* this)
 {
-	this->user_data.p_efecto = &this->user_data.efecto_disparo;
+	this->user_data->p_efecto = &this->user_data.efecto_disparo;
 	InicializaPlayer (&this.user_data);
-	flags_player = flags_player&!FLAG_START_DISPARO;
+	flags_player |= FLAG_START_DISPARO;//
 }
 
 void InicializaPlayImpacto (fsm_t* this)
 {
-	this->user_data.p_efecto = &this->user_data.efecto_impacto;
+	this->user_data->p_efecto = &this->user_data->efecto_impacto;
 	InicializaPlayer (&this.user_data);
-	flags_player = flags_player&!FLAG_START_IMPACTO;
+	flags_player |= FLAG_START_IMPACTO;
 }
 
 void ComienzaNuevaNota (fsm_t* this)
@@ -134,16 +134,16 @@ void ActualizaPlayer (fsm_t* this)
 	}
 	else
 	{
-		flags_player|FLAG_PLAYER_END = 1;
+		flags_player | FLAG_PLAYER_END = 1;
 	}
 
-	flags_player = flags_player&!FLAG_NOTA_TIMEOUT;
+	flags_player = flags_player &! FLAG_NOTA_TIMEOUT;
 }
 
 void FinalEfecto (fsm_t* this)
 {
 	softToneStop (PLAYER_PWM_PIN);
-	flags_player = flags_player&!FLAG_PLAYER_END;
+	flags_player = flags_player &! FLAG_PLAYER_END;
 }
 
 //------------------------------------------------------
@@ -152,6 +152,6 @@ void FinalEfecto (fsm_t* this)
 
 void timer_player_duracion_nota_actual_isr (union sigval value)
 {
-	flags_player|FLAG_NOTA_TIMEOUT=1;
+	flags_player | FLAG_NOTA_TIMEOUT=1;
 	tmr_stop (tmr_t* tmr_t);
 }

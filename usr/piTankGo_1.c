@@ -114,7 +114,7 @@ void delay_until (unsigned int next) {
 	}
 }
 
-int main ()
+int main (void)
 {
 	TipoSistema sistema;
 	unsigned int next;
@@ -139,7 +139,8 @@ int main ()
 	// ...
 
 	next = millis();
-	while (1) {
+	while (1)
+	{
 		fsm_fire (player_fsm);
 		// A completar por el alumno...
 		// ...
