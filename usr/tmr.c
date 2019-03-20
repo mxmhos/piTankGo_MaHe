@@ -19,7 +19,7 @@ tmr_t* tmr_new (notify_func_t isr)
 
 }
 
-//inicialización del timer
+//inicialización del timer. Su usa con el tmr_new
 void tmr_init (tmr_t* this, notify_func_t isr) {
     this->se.sigev_notify = SIGEV_THREAD;
     this->se.sigev_value.sival_ptr = &(this->timerid);
@@ -28,14 +28,14 @@ void tmr_init (tmr_t* this, notify_func_t isr) {
     timer_create (CLOCK_REALTIME, &(this->se), &(this->timerid));  /* o CLOCK_MONOTONIC si se soporta */
 }
 
-//eliminar el timer
+//eliminar el timer y libera memoria
 void tmr_destroy(tmr_t* this)
 {
     tmr_stop (this);
     free(this);
 }
 
-//Establece el tiempo en milisegundos para que se produzca la interrupción
+//Establece el tiempo en milisegundos para que se produzca la interrupción y arranca el timer
 void tmr_startms(tmr_t* this, int ms) {
     this->spec.it_value.tv_sec = ms / 1000;
     this->spec.it_value.tv_nsec = (ms % 1000) * 1000000;

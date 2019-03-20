@@ -106,15 +106,15 @@ int CompruebaFinalEfecto (fsm_t* this)
 
 void InicializaPlayDisparo (fsm_t* this)
 {
-	this->user_data->p_efecto = &this->user_data.efecto_disparo;
-	InicializaPlayer (&this.user_data);
+	this->user_data.p_efecto = &(this->user_data.efecto_disparo);//se asigna el puntero del player al efecto dispaaro
+	InicializaPlayer (&(this.user_data));//se le pasa toda la estrucctura player
 	flags_player |= FLAG_START_DISPARO;//
 }
 
 void InicializaPlayImpacto (fsm_t* this)
 {
 	this->user_data->p_efecto = &this->user_data->efecto_impacto;
-	InicializaPlayer (&this.user_data);
+	InicializaPlayer (&(this.user_data));
 	flags_player |= FLAG_START_IMPACTO;
 }
 
@@ -152,6 +152,6 @@ void FinalEfecto (fsm_t* this)
 
 void timer_player_duracion_nota_actual_isr (union sigval value)
 {
-	flags_player | FLAG_NOTA_TIMEOUT=1;
+	flags_player |= FLAG_NOTA_TIMEOUT;//se activa el flag de tiempo cumplido de la nota
 	tmr_stop (tmr_t* tmr_t);
 }

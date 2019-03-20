@@ -46,7 +46,8 @@
 
 // Distribucion de pines GPIO empleada para la reproducción de efectos
 // ATENCION: Valores a modificar por el alumno
-#define PLAYER_PWM_PIN 	45
+#define PLAYER_PWM_PIN 	45  //GPIO12
+#define NO_SONAR 0 //frecuencia de 0Hz
 
 // Distribucion de pines GPIO empleada para el control de los servos
 // ATENCION: Valores a modificar por el alumno

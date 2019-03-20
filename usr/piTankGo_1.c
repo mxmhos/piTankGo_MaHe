@@ -35,11 +35,13 @@ int flags_player = 0;
 // crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
 int ConfiguraSistema (TipoSistema *p_sistema) {
 	int result = 0;
-	// A completar por el alumno...
-	// ...
-	softToneCreate (PLAYER_PWM_PIN); //?aca??
-	tmr_t* tmr_new (notify_func_t timer_player_duracion_nota_actual_isr);
-	// void tmr_init (tmr_t* tmr_t, notify_func_t timer_player_duracion_nota_actual_isr); El init ya esta dento de la funcion tmr_new
+	wiringPiSetup();//Inicialización de la configuración de wiringPi-completamente necesario
+	
+	softToneCreate (PLAYER_PWM_PIN);//creación del hilo para el control del sonido
+	softToneWrite(PLAYER_PWM_PIN, NO_SONAR);
+
+	tmr_t* tmr_new (timer_player_duracion_nota_actual_isr);//funcion que se va a llamar cuando se produzca la interrupción
+
 	return result;
 }
 
@@ -50,10 +52,9 @@ int ConfiguraSistema (TipoSistema *p_sistema) {
 // igualmente arrancará el thread de exploración del teclado del PC
 int InicializaSistema (TipoSistema *p_sistema) {
 	int result = 0;
-	// A completar por el alumno...
-	// ...
-	InicializaEfecto (&(sistema.player.efecto_disparo), "Disparo", &frecuenciasDisparo, &tiemposDisparo, sizeof(tiemposDisparo));
-	InicializaEfecto (&(sistema.player.efecto_impacto), "Impacto", &frecuenciasImpacto, &tiemposImpacto, sizeof(tiemposImpacto));
+		
+	InicializaEfecto (&(p_sistema->player.efecto_disparo), "Disparo", frecuenciasDisparo, tiemposDisparo, sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]);//sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]---->el tamaño de memoria usado se divide entre lo que ocupa un valor de memoria
+	InicializaEfecto (&(sistema.player.efecto_impacto), "Impacto", &frecuenciasImpacto, &tiemposImpacto, sizeof(tiemposImpacto)/sizeof(tiemposImpacto[0]));
 
 	// Lanzamos thread para exploracion del teclado convencional del PC
 	result = piThreadCreate (thread_explora_teclado_PC);
