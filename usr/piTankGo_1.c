@@ -22,6 +22,7 @@ int tiemposImpacto[32] = {10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
 int flags_juego = 0;
 int flags_player = 0;
 
+tmr_t* timer_efecto;
 
 //------------------------------------------------------
 // FUNCIONES DE CONFIGURACION/INICIALIZACION
@@ -34,15 +35,15 @@ int flags_player = 0;
 // configurar las interrupciones periódicas y sus correspondientes temporizadores,
 // crear, si fuese necesario, los threads adicionales que pueda requerir el sistema
 int ConfiguraSistema (TipoSistema *p_sistema) {
-	int result = 0;
-	wiringPiSetup();//Inicialización de la configuración de wiringPi-completamente necesario
-	
-	softToneCreate (PLAYER_PWM_PIN);//creación del hilo para el control del sonido
-	softToneWrite(PLAYER_PWM_PIN, NO_SONAR);
+    int result = 0;
+    wiringPiSetup();//Inicialización de la configuración de wiringPi-completamente necesario
+    
+    softToneCreate (PLAYER_PWM_PIN);//creación del hilo para el control del sonido
+    softToneWrite(PLAYER_PWM_PIN, NO_SONAR);
 
-	tmr_t* tmr_new (timer_player_duracion_nota_actual_isr);//funcion que se va a llamar cuando se produzca la interrupción
+    timer_efecto = tmr_new (timer_player_duracion_nota_actual_isr);//funcion que se va a llamar cuando se produzca la interrupción
 
-	return result;
+    return result;
 }
 
 // int InicializaSistema (TipoSistema *p_sistema): procedimiento de inicializacion del sistema.
@@ -51,20 +52,20 @@ int ConfiguraSistema (TipoSistema *p_sistema) {
 // la torreta, los efectos, etc.
 // igualmente arrancará el thread de exploración del teclado del PC
 int InicializaSistema (TipoSistema *p_sistema) {
-	int result = 0;
-		
-	InicializaEfecto (&(p_sistema->player.efecto_disparo), "Disparo", frecuenciasDisparo, tiemposDisparo, sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]);//sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]---->el tamaño de memoria usado se divide entre lo que ocupa un valor de memoria
-	InicializaEfecto (&(sistema.player.efecto_impacto), "Impacto", &frecuenciasImpacto, &tiemposImpacto, sizeof(tiemposImpacto)/sizeof(tiemposImpacto[0]));
+    int result = 0;
+        
+    InicializaEfecto (&(p_sistema->player.efecto_disparo), "Disparo", frecuenciasDisparo, tiemposDisparo, sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]);//sizeof(tiemposDisparo)/sizeof(tiempoDisparo[0]---->el tamaño de memoria usado se divide entre lo que ocupa un valor de memoria
+    InicializaEfecto (&(sistema.player.efecto_impacto), "Impacto", &frecuenciasImpacto, &tiemposImpacto, sizeof(tiemposImpacto)/sizeof(tiemposImpacto[0]));
 
-	// Lanzamos thread para exploracion del teclado convencional del PC
-	result = piThreadCreate (thread_explora_teclado_PC);
+    // Lanzamos thread para exploracion del teclado convencional del PC
+    result = piThreadCreate (thread_explora_teclado_PC);
 
-	if (result != 0) {
-		printf ("Thread didn't start!!!\n");
-		return -1;
-	}
+    if (result != 0) {
+        printf ("Thread didn't start!!!\n");
+        return -1;
+    }
 
-	return result;
+    return result;
 }
 
 //------------------------------------------------------
@@ -72,83 +73,83 @@ int InicializaSistema (TipoSistema *p_sistema) {
 //------------------------------------------------------
 
 PI_THREAD (thread_explora_teclado_PC) {
-	int teclaPulsada;
+    int teclaPulsada;
 
-	while(1) {
-		delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
+    while(1) {
+        delay(10); // Wiring Pi function: pauses program execution for at least 10 ms
 
-		piLock (STD_IO_BUFFER_KEY);
+        piLock (STD_IO_BUFFER_KEY);
 
-		if(kbhit()) {
-			teclaPulsada = kbread();
+        if(kbhit()) {
+            teclaPulsada = kbread();
 
-			switch(teclaPulsada) {
-				// A completar por el alumno...
-				// ...
-				case 's':
-					// A completar por el alumno...
-					// ...
-					printf("Tecla S pulsada!\n");
-					fflush(stdout);
-					break;
+            switch(teclaPulsada) {
+                // A completar por el alumno...
+                // ...
+                case 's':
+                    // A completar por el alumno...
+                    // ...
+                    printf("Tecla S pulsada!\n");
+                    fflush(stdout);
+                    break;
 
-				case 'q':
-					exit(0);
-					break;
+                case 'q':
+                    exit(0);
+                    break;
 
-				default:
-					printf("INVALID KEY!!!\n");
-					break;
-			}
-		}
+                default:
+                    printf("INVALID KEY!!!\n");
+                    break;
+            }
+        }
 
-		piUnlock (STD_IO_BUFFER_KEY);
-	}
+        piUnlock (STD_IO_BUFFER_KEY);
+    }
 }
 
 
 // wait until next_activation (absolute time)
 void delay_until (unsigned int next) {
-	unsigned int now = millis();
-	if (next > now) {
-		delay (next - now);
-	}
+    unsigned int now = millis();
+    if (next > now) {
+        delay (next - now);
+    }
 }
 
 int main (void)
 {
-	TipoSistema sistema;
-	unsigned int next;
+    TipoSistema sistema;
+    unsigned int next;
 
-	// Configuracion e inicializacion del sistema
-	ConfiguraSistema (&sistema);
+    // Configuracion e inicializacion del sistema
+    ConfiguraSistema (&sistema);
 
-	InicializaSistema (&sistema);
+    InicializaSistema (&sistema);
 
-	fsm_trans_t reproductor[] = {
-		{ WAIT_START, CompruebaStartDisparo, WAIT_NEXT, InicializaPlayDisparo },
-		{ WAIT_START, CompruebaStartImpacto, WAIT_NEXT, InicializaPlayImpacto },
-		{ WAIT_NEXT, CompruebaStartImpacto, WAIT_NEXT, InicializaPlayImpacto },
-		{ WAIT_NEXT, CompruebaNotaTimeout, WAIT_END, ActualizaPlayer },
-		{ WAIT_END, CompruebaFinalEfecto, WAIT_START, FinalEfecto },
-		{ WAIT_END, CompruebaNuevaNota, WAIT_NEXT, ComienzaNuevaNota},
-		{-1, NULL, -1, NULL },
-	};
+    fsm_trans_t reproductor[] = {
+        { WAIT_START, CompruebaStartDisparo, WAIT_NEXT, InicializaPlayDisparo },
+        { WAIT_START, CompruebaStartImpacto, WAIT_NEXT, InicializaPlayImpacto },
+        { WAIT_NEXT, CompruebaStartImpacto, WAIT_NEXT, InicializaPlayImpacto },
+        { WAIT_NEXT, CompruebaNotaTimeout, WAIT_END, ActualizaPlayer },
+        { WAIT_END, CompruebaFinalEfecto, WAIT_START, FinalEfecto },
+        { WAIT_END, CompruebaNuevaNota, WAIT_NEXT, ComienzaNuevaNota},
+        {-1, NULL, -1, NULL },
+    };
 
-	fsm_t* player_fsm = fsm_new (WAIT_START, reproductor, &(sistema.player));
-	// A completar por el alumno...
-	// ...
+    fsm_t* player_fsm = fsm_new (WAIT_START, reproductor, &(sistema.player));
+    // A completar por el alumno...
+    // ...
 
-	next = millis();
-	while (1)
-	{
-		fsm_fire (player_fsm);
-		// A completar por el alumno...
-		// ...
+    next = millis();
+    while (1)
+    {
+        fsm_fire (player_fsm);
+        // A completar por el alumno...
+        // ...
 
-		next += CLK_MS;
-		delay_until (next);
-	}
+        next += CLK_MS;
+        delay_until (next);
+    }
 
-	return 0;
+    return 0;
 }
